@@ -1,8 +1,15 @@
-export async function logout(req, res) {
-  // JWT-only logout
-  // Client removes token
-  return res.status(200).json({
-    success: true,
-    message: "Logged out successfully"
-  });
-}
+export const createTask = async (req, res) => {
+  res.json({ success: true, message: "createTask placeholder" });
+};
+
+export const listTasks = async (req, res) => {
+  res.json({ success: true, message: "listTasks placeholder" });
+};
+
+export const updateTask = async (req, res) => {
+  res.json({ success: true, message: "updateTask placeholder" });
+};
+
+export const updateTaskStatus = async (req, res) => {
+  res.json({ success: true, message: "updateTaskStatus placeholder" });
+};
