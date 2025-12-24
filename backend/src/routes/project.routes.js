@@ -1,10 +1,12 @@
 import express from "express";
 import {
-  createProject,
   listProjects,
+  createProject,
   updateProject,
-  deleteProject
+  deleteProject,
+  getProjectById
 } from "../controllers/project.controller.js";
+
 import { authenticate } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
@@ -24,5 +26,7 @@ router.put("/:projectId", authenticate, updateProject);
 
 // Delete project
 router.delete("/:projectId", authenticate, deleteProject);
+// Get single project
+router.get("/:projectId", authenticate, getProjectById);
 
 export default router;
