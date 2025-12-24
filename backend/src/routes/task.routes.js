@@ -1,21 +1,22 @@
 import express from "express";
-import {
-  createTask,
-  listTasks,
-  updateTask,
-  updateTaskStatus
-} from "../controllers/task.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
+import {
+  getTasksByProject,
+  createTask,
+  updateTask,
+  updateTaskStatus,
+  deleteTask,
+} from "../controllers/task.controller.js";
 
 const router = express.Router();
 
-/**
- * Task Management Routes
- */
-
+// Project → Tasks
+router.get("/projects/:projectId/tasks", authenticate, getTasksByProject);
 router.post("/projects/:projectId/tasks", authenticate, createTask);
-router.get("/projects/:projectId/tasks", authenticate, listTasks);
+
+// Task actions
 router.put("/tasks/:taskId", authenticate, updateTask);
 router.patch("/tasks/:taskId/status", authenticate, updateTaskStatus);
+router.delete("/tasks/:taskId", authenticate, deleteTask);
 
 export default router;
