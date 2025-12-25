@@ -1,5 +1,5 @@
 import pool from "../config/db.js";
-
+import { logAudit } from "../services/audit.service.js";
 /**
  * GET /api/projects
  * List all projects for current tenant
@@ -41,6 +41,26 @@ export const createProject = async (req, res) => {
   try {
     const { tenantId, userId } = req.user;
     const { name, description } = req.body;
+    // 1️⃣ Get tenant limits
+const tenantRes = await pool.query(
+  "SELECT max_projects FROM tenants WHERE id = $1",
+  [tenantId]
+);
+
+const maxProjects = tenantRes.rows[0].max_projects;
+
+// 2️⃣ Count existing projects
+const countRes = await pool.query(
+  "SELECT COUNT(*) FROM projects WHERE tenant_id = $1",
+  [tenantId]
+);
+
+if (Number(countRes.rows[0].count) >= maxProjects) {
+  return res.status(403).json({
+    success: false,
+    message: "Project limit exceeded for your subscription plan",
+  });
+}
 
     const result = await pool.query(
       `
@@ -51,6 +71,14 @@ export const createProject = async (req, res) => {
       `,
       [tenantId, name, description]
     );
+    await logAudit({
+  tenantId,
+  userId,
+  action: "CREATE",
+  entityType: "project",
+  entityId: result.rows[0].id,
+  ipAddress: req.ip,
+});
 
     res.status(201).json({
       success: true,
@@ -72,7 +100,7 @@ export const createProject = async (req, res) => {
  */
 export const updateProject = async (req, res) => {
   try {
-    const { tenantId } = req.user;
+    const { tenantId, userId } = req.user;
     const { projectId } = req.params;
     const { name, description, status } = req.body;
 
@@ -85,6 +113,15 @@ export const updateProject = async (req, res) => {
       `,
       [name, description, status, projectId, tenantId]
     );
+    await logAudit({
+  tenantId,
+  userId,
+  action: "UPDATE",
+  entityType: "project",
+  entityId: projectId,
+  ipAddress: req.ip,
+});
+
 
     if (!result.rowCount) {
       return res.status(404).json({
@@ -113,7 +150,8 @@ export const updateProject = async (req, res) => {
  */
 export const deleteProject = async (req, res) => {
   try {
-    const { tenantId } = req.user;
+    const { tenantId, userId } = req.user;
+
     const { projectId } = req.params;
 
     const result = await pool.query(
@@ -123,6 +161,14 @@ export const deleteProject = async (req, res) => {
       `,
       [projectId, tenantId]
     );
+    await logAudit({
+  tenantId,
+  userId,
+  action: "DELETE",
+  entityType: "project",
+  entityId: projectId,
+  ipAddress: req.ip,
+});
 
     if (!result.rowCount) {
       return res.status(404).json({
