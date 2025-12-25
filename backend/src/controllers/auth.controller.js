@@ -27,7 +27,7 @@ export const registerTenant = async (req, res) => {
       `
       INSERT INTO tenants
       (id, name, subdomain, status, subscription_plan, max_users, max_projects, created_at, updated_at)
-      VALUES (gen_random_uuid(), $1, $2, 'active', 'free', 5, 5, NOW(), NOW())
+      VALUES (gen_random_uuid(), $1, $2, 'active', 'free', 3, 3, NOW(), NOW())
       RETURNING id
       `,
       [tenantName, subdomain]
@@ -66,6 +66,8 @@ export const registerTenant = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+  console.log("LOGIN BODY:", req.body);
+
   const { email, password, tenantSubdomain } = req.body;
 
   const tenantRes = await pool.query(
