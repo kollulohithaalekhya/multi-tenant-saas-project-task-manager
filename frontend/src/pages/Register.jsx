@@ -44,13 +44,12 @@ export default function Register() {
 
     try {
       await axios.post("http://localhost:5000/api/auth/register-tenant", {
-        tenantName: form.tenantName,
-        subdomain: form.subdomain,
-        adminEmail: form.adminEmail,
+        tenantName: form.tenantName.trim(),
+        subdomain: form.subdomain.trim().toLowerCase(),
+        adminEmail: form.adminEmail.trim().toLowerCase(),
         adminPassword: form.adminPassword,
-        adminFullName: form.adminFullName,
+        adminFullName: form.adminFullName.trim(),
       });
-
       setSuccess("Registration successful. Redirecting to login...");
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
@@ -83,6 +82,12 @@ export default function Register() {
           onChange={handleChange}
           style={styles.input}
         />
+        {form.subdomain && (
+          <small style={{ color: "#94a3b8", fontSize: "12px" }}>
+            Preview: {form.subdomain}.yourapp.com
+          </small>
+        )}
+
 
         <input
           name="adminEmail"
