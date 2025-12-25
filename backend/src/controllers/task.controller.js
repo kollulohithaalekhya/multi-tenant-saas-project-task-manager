@@ -1,4 +1,5 @@
 import pool from "../config/db.js";
+import { logAudit } from "../services/audit.service.js";
 
 /**
  * GET /api/projects/:projectId/tasks
@@ -50,6 +51,18 @@ export const createTask = async (req, res) => {
     const { projectId } = req.params;
     const { tenantId, userId } = req.user;
     const { title, priority, dueDate } = req.body;
+    // Verify project belongs to tenant
+const projectRes = await pool.query(
+  "SELECT tenant_id FROM projects WHERE id = $1",
+  [projectId]
+);
+
+if (!projectRes.rowCount || projectRes.rows[0].tenant_id !== tenantId) {
+  return res.status(403).json({
+    success: false,
+    message: "Invalid project for tenant",
+  });
+}
 
     const result = await pool.query(
       `
@@ -61,6 +74,15 @@ export const createTask = async (req, res) => {
       `,
       [tenantId, projectId, title, priority || "medium", dueDate || null, userId]
     );
+    await logAudit({
+  tenantId,
+  userId,
+  action: "CREATE",
+  entityType: "task",
+  entityId: result.rows[0].id,
+  ipAddress: req.ip,
+});
+
 
     res.status(201).json({
       success: true,
@@ -84,7 +106,8 @@ export const createTask = async (req, res) => {
 export const updateTask = async (req, res) => {
   try {
     const { taskId } = req.params;
-    const { tenantId } = req.user;
+    const { tenantId, userId } = req.user;
+
     const { title, priority, dueDate, status } = req.body;
 
     const result = await pool.query(
@@ -102,6 +125,15 @@ export const updateTask = async (req, res) => {
       `,
       [title, priority, dueDate, status, taskId, tenantId]
     );
+    await logAudit({
+  tenantId,
+  userId,
+  action: "UPDATE",
+  entityType: "task",
+  entityId: taskId,
+  ipAddress: req.ip,
+});
+
 
     if (!result.rowCount) {
       return res.status(404).json({
@@ -132,7 +164,8 @@ export const updateTask = async (req, res) => {
 export const updateTaskStatus = async (req, res) => {
   try {
     const { taskId } = req.params;
-    const { tenantId } = req.user;
+    const { tenantId, userId } = req.user;
+
     const { status } = req.body;
 
     const result = await pool.query(
@@ -144,6 +177,14 @@ export const updateTaskStatus = async (req, res) => {
       `,
       [status, taskId, tenantId]
     );
+    await logAudit({
+  tenantId,
+  userId,
+  action: "UPDATE",
+  entityType: "task",
+  entityId: taskId,
+  ipAddress: req.ip,
+});
 
     if (!result.rowCount) {
       return res.status(404).json({
@@ -173,7 +214,8 @@ export const updateTaskStatus = async (req, res) => {
 export const deleteTask = async (req, res) => {
   try {
     const { taskId } = req.params;
-    const { tenantId } = req.user;
+    const { tenantId, userId } = req.user;
+
 
     const result = await pool.query(
       `
@@ -182,6 +224,15 @@ export const deleteTask = async (req, res) => {
       `,
       [taskId, tenantId]
     );
+    await logAudit({
+  tenantId,
+  userId,
+  action: "DELETE",
+  entityType: "task",
+  entityId: taskId,
+  ipAddress: req.ip,
+});
+
 
     if (!result.rowCount) {
       return res.status(404).json({
