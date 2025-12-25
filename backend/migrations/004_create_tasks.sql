@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   description TEXT,
   status VARCHAR(20) DEFAULT 'todo',
   priority VARCHAR(20) DEFAULT 'medium',
+  created_by UUID REFERENCES users(id),
   assigned_to UUID REFERENCES users(id),
   due_date DATE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

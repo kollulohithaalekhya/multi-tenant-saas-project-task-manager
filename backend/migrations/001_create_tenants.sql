@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS tenants (
   status VARCHAR(20) DEFAULT 'active',
   subscription_plan VARCHAR(20) DEFAULT 'free',
   max_users INTEGER DEFAULT 5,
-  max_projects INTEGER DEFAULT 5,
+  max_projects INTEGER DEFAULT 3,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
