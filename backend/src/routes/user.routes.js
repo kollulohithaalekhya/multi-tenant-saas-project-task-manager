@@ -33,6 +33,7 @@ router.get(
 router.put(
   "/users/:userId",
   authenticate,
+  authorizeRoles("tenant_admin"),
   updateUser
 );
 
