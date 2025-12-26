@@ -41,7 +41,7 @@ export const createProject = async (req, res) => {
   try {
     const { tenantId, userId } = req.user;
     const { name, description } = req.body;
-    // 1️⃣ Get tenant limits
+    //  Get tenant limits
 const tenantRes = await pool.query(
   "SELECT max_projects FROM tenants WHERE id = $1",
   [tenantId]
@@ -49,7 +49,7 @@ const tenantRes = await pool.query(
 
 const maxProjects = tenantRes.rows[0].max_projects;
 
-// 2️⃣ Count existing projects
+//  Count existing projects
 const countRes = await pool.query(
   "SELECT COUNT(*) FROM projects WHERE tenant_id = $1",
   [tenantId]

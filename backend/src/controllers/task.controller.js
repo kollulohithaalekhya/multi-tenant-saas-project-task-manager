@@ -64,16 +64,44 @@ if (!projectRes.rowCount || projectRes.rows[0].tenant_id !== tenantId) {
   });
 }
 
-    const result = await pool.query(
-      `
-      INSERT INTO tasks
-      (id, tenant_id, project_id, title, status, priority, due_date, created_by, created_at, updated_at)
-      VALUES
-      (gen_random_uuid(), $1, $2, $3, 'todo', $4, $5, $6, NOW(), NOW())
-      RETURNING *
-      `,
-      [tenantId, projectId, title, priority || "medium", dueDate || null, userId]
-    );
+   const result = await pool.query(
+  `
+  INSERT INTO tasks
+  (
+    id,
+    tenant_id,
+    project_id,
+    title,
+    status,
+    priority,
+    due_date,
+    created_by,
+    assigned_to
+  )
+  VALUES
+  (
+    gen_random_uuid(),
+    $1,
+    $2,
+    $3,
+    'todo',
+    $4,
+    $5,
+    $6,
+    $6   -- assigned_to = creator
+  )
+  RETURNING *
+  `,
+  [
+    tenantId,
+    projectId,
+    title,
+    priority || "medium",
+    dueDate || null,
+    userId
+  ]
+);
+
     await logAudit({
   tenantId,
   userId,
@@ -250,6 +278,42 @@ export const deleteTask = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to delete task",
+    });
+  }
+};
+export const getMyTasks = async (req, res) => {
+  try {
+    const { userId, tenantId } = req.user;
+
+    const result = await pool.query(
+      `
+      SELECT
+        id,
+        title,
+        status,
+        priority,
+        due_date,
+        project_id,
+        created_at
+      FROM tasks
+      WHERE tenant_id = $1
+        AND (created_by = $2 OR assigned_to = $2)
+      ORDER BY created_at DESC
+      `,
+      [tenantId, userId]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        tasks: result.rows,
+      },
+    });
+  } catch (err) {
+    console.error("getMyTasks error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch my tasks",
     });
   }
 };
