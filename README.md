@@ -243,20 +243,18 @@ Includes:
 
 ---
 
-##  Evaluation Compliance
+## Evaluation Compliance
 
-✔ Automatic database migrations
-✔ Automatic seed data
-✔ Docker-only setup
-✔ Health check implemented
-✔ Role-based authentication
-✔ Tenant isolation
+- Automatic database migrations
+-  Automatic seed data
+-  Docker-only setup
+-  Health check implemented
+-  Role-based authentication
+-  Tenant isolation
 
 ---
 
 ##  License
 
 This project is for educational and evaluation purposes.
-
-````
 
