@@ -71,6 +71,15 @@ This application follows a **three-tier architecture**:
 3. **Database (PostgreSQL)**  
    - Isolated persistent storage using Docker volumes  
    - Initialized automatically using migration and seed SQL files
+   
+### Architecture Diagram
+
+![System Architecture](docs/images/system-architecture.png)
+
+### Database ERD
+
+![Database ERD](docs/images/database-erd.png)
+
 
 > All services communicate using Docker service names (not localhost).
 
