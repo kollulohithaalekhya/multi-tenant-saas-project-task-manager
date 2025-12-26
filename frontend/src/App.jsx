@@ -7,7 +7,8 @@ import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./pages/DashboardHome";
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
-
+import Users from "./pages/Users";
+import Tasks from "./pages/Tasks"
 export default function App() {
   return (
     <AuthProvider>
@@ -28,6 +29,8 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardHome />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:projectId" element={<ProjectDetails />} />
+             <Route path="/users" element={<Users />} />
+             <Route path="/tasks" element={<Tasks />} />
           </Route>
 
           {/* FALLBACK */}
