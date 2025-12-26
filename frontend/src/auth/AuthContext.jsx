@@ -7,11 +7,20 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const login = async (credentials) => {
-    const res = await api.post("/auth/login", credentials);
+  const login = async ({ email, password, tenantSubdomain }) => {
+    const res = await api.post("/auth/login", {
+      email,
+      password,
+      tenantSubdomain,
+    });
+
     localStorage.setItem("token", res.data.data.token);
-    setUser(res.data.data.user);
-    return true;
+
+    const u = res.data.data.user;
+    setUser({
+      ...u,
+      tenantId: u.tenantId,
+    });
   };
 
   const logout = () => {
@@ -29,7 +38,17 @@ export const AuthProvider = ({ children }) => {
     const loadUser = async () => {
       try {
         const res = await api.get("/auth/me");
-        setUser(res.data.data);
+        const u = res.data.data;
+
+        setUser({
+          id: u.id,
+          email: u.email,
+          full_name: u.full_name,
+          role: u.role,
+          tenantId: u.tenant_id,   
+          tenant_name: u.tenant_name,
+          subdomain: u.subdomain,
+        });
       } catch {
         logout();
       } finally {
