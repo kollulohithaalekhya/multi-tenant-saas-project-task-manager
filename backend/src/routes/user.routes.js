@@ -16,7 +16,7 @@ const router = express.Router();
 
 // Add user to tenant (tenant_admin only)
 router.post(
-  "/tenants/:tenantId/users",
+  "/tenants/:tenant_id/users",
   authenticate,
   authorizeRoles("tenant_admin"),
   addUser
@@ -24,7 +24,7 @@ router.post(
 
 // List users in a tenant
 router.get(
-  "/tenants/:tenantId/users",
+  "/tenants/:tenant_id/users",
   authenticate,
   listUsers
 );
