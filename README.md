@@ -28,7 +28,7 @@ Students, developers, and evaluators reviewing multi-tenant backend architecture
 
 ---
 
-## 🧰 Technology Stack
+##  Technology Stack
 
 ### Frontend
 - React 19
@@ -55,7 +55,7 @@ Students, developers, and evaluators reviewing multi-tenant backend architecture
 
 ---
 
-## 🏗 Architecture Overview
+##  Architecture Overview
 
 This application follows a **three-tier architecture**:
 
@@ -254,7 +254,7 @@ Includes:
 
 ---
 
-## 📄 License
+##  License
 
 This project is for educational and evaluation purposes.
 
