@@ -4,14 +4,16 @@ import { useNavigate } from "react-router-dom";
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
+  const [search, setSearch] = useState(""); 
+  const [statusFilter, setStatusFilter] = useState(""); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
-const [editingProject, setEditingProject] = useState(null);
+  const [editingProject, setEditingProject] = useState(null);
 
-const [name, setName] = useState("");
-const [description, setDescription] = useState("");
-const [status, setStatus] = useState("active");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("active");
 
   const navigate = useNavigate();
 
@@ -23,22 +25,27 @@ const [status, setStatus] = useState("active");
     try {
       const res = await api.get("/projects");
       setProjects(res.data.data.projects || []);
-    } catch (err) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem("token");
-        navigate("/login");
-      } else {
-        setError("Failed to load projects");
-      }
+    } catch {
+      setError("Failed to load projects");
     } finally {
       setLoading(false);
     }
   };
-const saveProject = async () => {
-    if (!name.trim()) {
-      alert("Project name required");
-      return;
-    }
+
+  const filteredProjects = projects.filter((p) => {
+    const matchesName = p.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const matchesStatus = statusFilter
+      ? p.status === statusFilter
+      : true;
+
+    return matchesName && matchesStatus;
+  });
+
+  const saveProject = async () => {
+    if (!name.trim()) return alert("Project name required");
 
     try {
       if (editingProject) {
@@ -64,8 +71,11 @@ const saveProject = async () => {
     }
   };
 
-
-  /* ---------------- MODAL HANDLERS ---------------- */
+  const deleteProject = async (id) => {
+    if (!window.confirm("Delete this project?")) return;
+    await api.delete(`/projects/${id}`);
+    setProjects((prev) => prev.filter((p) => p.id !== id));
+  };
 
   const openCreateModal = () => {
     setEditingProject(null);
@@ -87,62 +97,91 @@ const saveProject = async () => {
     setShowModal(false);
     setEditingProject(null);
   };
-  if (loading) return <p style={styles.text}>Loading projects...</p>;
-  if (error) return <p style={styles.error}>{error}</p>;
-  const deleteProject = async (id) => {
-  if (!window.confirm("Delete this project?")) return;
 
-  try {
-    await api.delete(`/projects/${id}`);
-    setProjects(prev => prev.filter(p => p.id !== id));
-  } catch (err) {
-    alert("Failed to delete project");
-  }
-};
- return (
+  if (loading) return <p>Loading projects...</p>;
+  if (error) return <p>{error}</p>;
+
+  return (
     <div style={styles.container}>
       <div style={styles.header}>
         <h1>Projects</h1>
-        <button style={styles.primaryBtn} onClick={openCreateModal}>
-          + Create Project
-        </button>
+
+        <div style={{ display: "flex", gap: "10px" }}>
+          <input
+            placeholder="Search projects..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={styles.input}
+          />
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={styles.input}
+          >
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="archived">Archived</option>
+          </select>
+
+          <button style={styles.primaryBtn} onClick={openCreateModal}>
+             Create Project
+          </button>
+        </div>
       </div>
 
       <div style={styles.list}>
-        {projects.map((p) => (
-          <div
-            key={p.id}
-            style={styles.card}
-            onClick={() => navigate(`/projects/${p.id}`)}
+  {filteredProjects.length === 0 ? (
+    <div style={styles.emptyState}>
+      <h3>No projects found</h3>
+      <p>
+        Try changing the search keyword or status filter.
+      </p>
+
+      <button style={styles.primaryBtn} onClick={openCreateModal}>
+        + Create New Project
+      </button>
+    </div>
+  ) : (
+    filteredProjects.map((p) => (
+      <div
+        key={p.id}
+        style={styles.card}
+        onClick={() => navigate(`/projects/${p.id}`)}
+      >
+        <h3>{p.name}</h3>
+        <p>{p.description || "No description"}</p>
+        <span style={styles.status}>{p.status}</span>
+        <small style={styles.hint}>
+  Click card to view tasks →
+</small>
+        <div style={styles.actions}>
+          <button
+            style={styles.editBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              openEditModal(p);
+            }}
           >
-            <h3>{p.name}</h3>
-            <p>{p.description || "No description"}</p>
-            <span style={styles.status}>{p.status}</span>
+            Edit
+          </button>
 
-            <div style={styles.actions}>
-              <button
-                style={styles.editBtn}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openEditModal(p);
-                }}
-              >
-                Edit
-              </button>
-
-              <button
-                style={styles.deleteBtn}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteProject(p.id);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+          <button
+            style={styles.deleteBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteProject(p.id);
+            }}
+          >
+            Delete
+          </button>
+        </div>
       </div>
+    ))
+  )}
+</div>
+
 
       {showModal && (
         <div style={styles.overlay}>
@@ -189,10 +228,12 @@ const saveProject = async () => {
 }
 const styles = {
   container: {
-    padding: "2rem",
+    padding: "1.5rem",
     background: "linear-gradient(180deg, #020617, #0f172a)",
     minHeight: "100vh",
     color: "#e5e7eb",
+    maxWidth: "1400px",
+    margin: "0 auto",           
   },
 
   header: {
@@ -200,57 +241,69 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "1.5rem",
+    gap: "1rem",
+    flexWrap: "wrap",
   },
 
   primaryBtn: {
     background: "#2563eb",
     color: "white",
     border: "none",
-    padding: "8px 14px",
-    borderRadius: "6px",
+    padding: "10px 20px",
+    borderRadius: "8px",
     cursor: "pointer",
     fontWeight: "600",
+    fontSize: "14px",
+    whiteSpace: "nowrap",
   },
 
   list: {
     display: "grid",
-    gap: "1rem",
+    gap: "1.25rem",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
   },
 
-  card: {
-    background: "#020617",
-    padding: "1.2rem",
-    borderRadius: "10px",
-    border: "1px solid #334155",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-  },
-
-  cardHover: {
-    transform: "scale(1.01)",
-    borderColor: "#2563eb",
-  },
+ card: {
+  background: "#020617",
+  padding: "1.25rem",
+  borderRadius: "14px",
+  border: "1px solid #334155",
+  cursor: "pointer",
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+  transition: "transform 0.15s ease, box-shadow 0.15s ease",
+},
+hint: {
+  fontSize: "12px",
+  color: "#60a5fa",
+  marginTop: "6px",
+  fontWeight: "500",
+},
 
   status: {
     display: "inline-block",
-    marginTop: "6px",
-    padding: "4px 10px",
+    marginTop: "4px",
+    padding: "4px 12px",
     borderRadius: "999px",
     fontSize: "12px",
     background: "#1e293b",
+    alignSelf: "flex-start",
   },
 
   actions: {
     display: "flex",
-    gap: "8px",
-    marginTop: "10px",
+    gap: "10px",
+    marginTop: "12px",
+    flexWrap: "wrap",
   },
 
   editBtn: {
     background: "#facc15",
     border: "none",
-    padding: "6px 10px",
-    borderRadius: "6px",
+    padding: "8px 14px",
+    borderRadius: "8px",
+    fontSize: "13px",
     cursor: "pointer",
     fontWeight: "600",
   },
@@ -259,13 +312,12 @@ const styles = {
     background: "#dc2626",
     color: "white",
     border: "none",
-    padding: "6px 10px",
-    borderRadius: "6px",
+    padding: "8px 14px",
+    borderRadius: "8px",
+    fontSize: "13px",
     cursor: "pointer",
     fontWeight: "600",
   },
-
-  /* ---------- MODAL ---------- */
 
   overlay: {
     position: "fixed",
@@ -274,56 +326,69 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    padding: "1rem",
     zIndex: 1000,
   },
 
   modal: {
     background: "#020617",
-    padding: "1.5rem",
-    borderRadius: "12px",
-    width: "380px",
+    padding: "1.75rem",
+    borderRadius: "14px",
+    width: "100%",
+    maxWidth: "420px",
     border: "1px solid #334155",
-  },
-
-  modalTitle: {
-    marginBottom: "1rem",
-    fontSize: "1.2rem",
   },
 
   input: {
     width: "100%",
-    padding: "8px",
-    marginBottom: "10px",
-    borderRadius: "6px",
+    padding: "12px",
+    marginBottom: "12px",
+    borderRadius: "8px",
     border: "1px solid #334155",
     background: "#0f172a",
     color: "#e5e7eb",
+    fontSize: "14px",
   },
 
   textarea: {
     width: "100%",
-    padding: "8px",
-    height: "80px",
-    marginBottom: "10px",
-    borderRadius: "6px",
-    border: "1px solid #334155",
+    height: "100px",
+    marginBottom: "12px",
+    padding: "12px",
+    borderRadius: "8px",
     background: "#0f172a",
     color: "#e5e7eb",
-    resize: "none",
+    fontSize: "14px",
+    resize: "vertical",
   },
 
   modalActions: {
     display: "flex",
     justifyContent: "flex-end",
-    gap: "10px",
+    gap: "12px",
+    flexWrap: "wrap",
   },
 
   cancelBtn: {
     background: "#334155",
-    color: "white",
     border: "none",
-    padding: "8px 14px",
-    borderRadius: "6px",
+    padding: "10px 16px",
+    borderRadius: "8px",
     cursor: "pointer",
+    color: "#e5e7eb",
+    fontWeight: "500",
   },
+  emptyState: {
+  gridColumn: "1 / -1",
+  background: "#020617",
+  border: "1px dashed #334155",
+  borderRadius: "14px",
+  padding: "2.5rem 1.5rem",
+  textAlign: "center",
+  color: "#94a3b8",
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+  alignItems: "center",
+},
 };

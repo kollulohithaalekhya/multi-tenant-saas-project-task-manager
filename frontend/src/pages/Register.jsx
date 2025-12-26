@@ -82,6 +82,10 @@ export default function Register() {
           onChange={handleChange}
           style={styles.input}
         />
+        <p style={{ fontSize: "12px", color: "#94a3b8" ,marginLeft:"12px"}}>
+  <li>Subdomain must be lowercase</li>
+</p>
+
         {form.subdomain && (
           <small style={{ color: "#94a3b8", fontSize: "12px" }}>
             Preview: {form.subdomain}.yourapp.com
@@ -145,46 +149,64 @@ export default function Register() {
     </div>
   );
 }
-
 const styles = {
   container: {
     minHeight: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    padding: "1.5rem",                
     background: "#0f172a",
   },
+
   card: {
     background: "#020617",
-    padding: "2rem",
-    borderRadius: "8px",
-    width: "360px",
+    padding: "1.75rem",
+    borderRadius: "10px",
+    width: "100%",
+    maxWidth: "380px",             
     color: "#e5e7eb",
     display: "flex",
     flexDirection: "column",
-    gap: "0.75rem",
+    gap: "0.85rem",                 
   },
+
   input: {
-    padding: "10px",
-    borderRadius: "4px",
+    padding: "12px",
+    borderRadius: "6px",
     border: "1px solid #334155",
     background: "#020617",
     color: "#e5e7eb",
+    fontSize: "14px",
+    width: "90%",
   },
+
   checkbox: {
     fontSize: "14px",
     display: "flex",
-    gap: "8px",
+    gap: "10px",
     alignItems: "center",
+    marginTop: "4px",
   },
+
   button: {
-    padding: "10px",
+    padding: "12px",
     background: "#22c55e",
     color: "white",
     border: "none",
-    borderRadius: "4px",
+    borderRadius: "6px",
     cursor: "pointer",
+    fontSize: "15px",
+    marginTop: "6px",
   },
-  error: { color: "#f87171" },
-  success: { color: "#4ade80" },
+
+  error: {
+    color: "#f87171",
+    fontSize: "14px",
+  },
+
+  success: {
+    color: "#4ade80",
+    fontSize: "14px",
+  },
 };

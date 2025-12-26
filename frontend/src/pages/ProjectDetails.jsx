@@ -30,7 +30,7 @@ export default function ProjectDetails() {
     }
   };
 
-  // ➕ CREATE TASK
+  //  CREATE TASK
   const createTask = async () => {
     if (!title.trim()) return alert("Task title required");
 
@@ -48,7 +48,7 @@ export default function ProjectDetails() {
     }
   };
 
-  // 🔄 UPDATE STATUS
+  //  UPDATE STATUS
   const updateStatus = async (taskId, status) => {
     try {
       const res = await api.patch(`/tasks/${taskId}/status`, { status });
@@ -61,7 +61,7 @@ export default function ProjectDetails() {
     }
   };
 
-  // 🗑 DELETE TASK
+  // DELETE TASK
   const deleteTask = async (taskId) => {
     if (!window.confirm("Delete task?")) return;
 
@@ -150,80 +150,96 @@ export default function ProjectDetails() {
 }
 const styles = {
   container: {
-    padding: "2.5rem",
+    padding: "1.5rem",
     background: "linear-gradient(180deg, #020617, #0f172a)",
     color: "#e5e7eb",
     minHeight: "100vh",
+    maxWidth: "1100px",
+    margin: "0 auto",                 
   },
 
   createBox: {
     display: "flex",
     gap: "12px",
     marginBottom: "28px",
-    marginTop: "12px",
+    marginTop: "16px",
+    flexWrap: "wrap",                
   },
 
   input: {
-    flex: 1,
-    padding: "8px 10px",
-    borderRadius: "6px",
+    flex: "1 1 220px",
+    padding: "10px 12px",
+    borderRadius: "8px",
     border: "1px solid #334155",
     background: "#020617",
     color: "#e5e7eb",
+    fontSize: "14px",
   },
 
   select: {
-    padding: "8px",
-    borderRadius: "6px",
+    padding: "10px 12px",
+    borderRadius: "8px",
     border: "1px solid #334155",
     background: "#020617",
     color: "#e5e7eb",
+    fontSize: "14px",
+    minWidth: "140px",
   },
 
   addBtn: {
     background: "#2563eb",
     color: "white",
     border: "none",
-    padding: "8px 14px",
-    borderRadius: "6px",
+    padding: "10px 18px",
+    borderRadius: "8px",
     cursor: "pointer",
     fontWeight: "600",
+    fontSize: "14px",
+    whiteSpace: "nowrap",
   },
 
   list: {
     listStyle: "none",
     padding: 0,
-    marginTop: "10px",
+    marginTop: "14px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
   },
 
   task: {
     background: "#020617",
-    padding: "14px",
-    borderRadius: "10px",
+    padding: "14px 16px",
+    borderRadius: "12px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "12px",
+    gap: "12px",
+    flexWrap: "wrap",                 
     border: "1px solid #334155",
   },
 
   taskTitle: {
     fontWeight: "600",
+    fontSize: "14px",
+    flex: "1 1 240px",               
   },
 
   taskActions: {
     display: "flex",
     gap: "10px",
     alignItems: "center",
+    flexWrap: "wrap",                 
   },
 
   deleteBtn: {
     background: "#dc2626",
     color: "white",
     border: "none",
-    padding: "6px 12px",
-    borderRadius: "6px",
+    padding: "8px 14px",
+    borderRadius: "8px",
     cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "600",
   },
 };
-

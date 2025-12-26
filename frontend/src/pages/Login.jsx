@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
 export default function Login() {
@@ -25,7 +25,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await login(form);   // ✅ USE AuthContext
+      await login(form);   
       navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Login failed");
@@ -73,6 +73,14 @@ export default function Login() {
         <button type="submit" disabled={loading} style={styles.button}>
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        <p style={styles.registerText}>
+          Don’t have an account?{" "}
+          <Link to="/register" style={styles.registerLink}>
+            Create Account
+          </Link>
+        </p>
+
       </form>
     </div>
   );
@@ -83,35 +91,58 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    padding: "1.5rem",               
     background: "#0f172a",
   },
+
   card: {
     background: "#020617",
-    padding: "2rem",
-    borderRadius: "8px",
-    width: "320px",
+    padding: "1.75rem",
+    borderRadius: "12px",
+    width: "100%",
+    maxWidth: "360px",             
     color: "#e5e7eb",
     display: "flex",
     flexDirection: "column",
-    gap: "1rem",
+    gap: "0.9rem",
   },
+
   input: {
-    padding: "10px",
-    borderRadius: "4px",
+    padding: "12px",
+    borderRadius: "8px",
     border: "1px solid #334155",
     background: "#020617",
     color: "#e5e7eb",
+    fontSize: "14px",
+    width: "90%",
   },
+
   button: {
-    padding: "10px",
+    padding: "12px",
     background: "#6366f1",
     color: "white",
     border: "none",
-    borderRadius: "4px",
+    borderRadius: "8px",
     cursor: "pointer",
+    fontSize: "15px",
+    fontWeight: "600",
+    marginTop: "4px",
   },
+  registerText: {
+  fontSize: "14px",
+  textAlign: "center",
+  marginTop: "8px",
+  color: "#94a3b8",
+},
+
+registerLink: {
+  color: "#6366f1",
+  fontWeight: "600",
+  textDecoration: "none",
+},
   error: {
     color: "#f87171",
     fontSize: "14px",
+    textAlign: "center",
   },
 };

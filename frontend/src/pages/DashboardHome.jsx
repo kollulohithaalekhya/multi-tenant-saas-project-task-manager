@@ -5,6 +5,7 @@ import api from "../api/axios";
 export default function DashboardHome() {
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
@@ -14,18 +15,34 @@ export default function DashboardHome() {
   }, []);
 
   const loadDashboard = async () => {
-    try {
-      const meRes = await api.get("/auth/me");
-      setUser(meRes.data.data);
+  try {
+    // Get user
+    const meRes = await api.get("/auth/me");
+    setUser(meRes.data.data);
 
-      const projectRes = await api.get("/projects");
-      setProjects(projectRes.data.data.projects || []);
-    } catch (err) {
-      console.error("Dashboard error", err);
-    } finally {
-      setLoading(false);
+    // Get projects
+    const projectRes = await api.get("/projects");
+    const projectsData = projectRes.data.data.projects || [];
+    setProjects(projectsData);
+
+    // Get tasks for all projects
+    let allTasks = [];
+
+    for (const project of projectsData) {
+      const taskRes = await api.get(
+        `/projects/${project.id}/tasks`
+      );
+      allTasks = [...allTasks, ...(taskRes.data.data.tasks || [])];
     }
-  };
+
+    setTasks(allTasks);
+  } catch (err) {
+    console.error("Dashboard error", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   if (loading) {
     return <p style={styles.loading}>Loading dashboard...</p>;
@@ -60,9 +77,19 @@ export default function DashboardHome() {
       {/* STATS */}
       <section style={styles.statsGrid}>
         <StatCard title="Total Projects" value={projects.length} />
-        <StatCard title="Active Projects" value={
-          projects.filter(p => p.status === "active").length
-        } />
+          <StatCard
+                title="Active Projects"
+                value={projects.filter(p => p.status === "active").length}
+              />
+        <StatCard
+          title="Pending Tasks"
+          value={tasks.filter(t => t.status !== "done").length}
+        />
+
+        <StatCard
+          title="Completed Tasks"
+          value={tasks.filter(t => t.status === "done").length}
+        />
       </section>
 
       {/* RECENT PROJECTS */}
@@ -95,11 +122,36 @@ export default function DashboardHome() {
         )}
       </section>
 
+      {/* MY TASKS */}
+      <section style={styles.card}>
+        <h3 style={styles.sectionTitle}>
+          My Tasks <span style={{ color: "#94a3b8", fontSize: "14px" }}>
+        </span>
+        </h3>
+
+        {tasks.length === 0 ? (
+          <p>No tasks assigned to you</p>
+        ) : (
+          <ul style={styles.projectList}>
+            {tasks.slice(0, 5).map((t) => (
+              <li
+                key={t.id}
+                style={styles.projectItem}
+                onClick={() => navigate(`/projects/${t.project_id}`)}
+              >
+                <span>{t.title}</span>
+                <span style={styles.status}>{t.status}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       {/* INFO NOTE */}
       <section style={styles.infoBox}>
         <p>
-          ℹ Tasks are managed inside each project.  
-          Open a project to create, update, or delete tasks.
+          ℹ Dashboard shows <b>only your tasks</b>.  
+          Tasks from other users are hidden to maintain tenant-level isolation.
         </p>
       </section>
     </div>
@@ -118,18 +170,20 @@ function StatCard({ title, value }) {
 }
 
 /* ---------- STYLES ---------- */
-
 const styles = {
   container: {
-    padding: "2rem",
+    padding: "1.5rem",
     background: "linear-gradient(180deg, #020617, #0f172a)",
     minHeight: "100vh",
     color: "#e5e7eb",
+    maxWidth: "1400px",
+    margin: "0 auto",               
   },
 
   loading: {
     padding: "2rem",
     color: "white",
+    textAlign: "center",
   },
 
   header: {
@@ -137,67 +191,76 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "2rem",
+    gap: "1rem",
+    flexWrap: "wrap",               
   },
 
   title: {
-    fontSize: "2rem",
-    marginBottom: "0.3rem",
+    fontSize: "1.8rem",
   },
 
   subtitle: {
     color: "#94a3b8",
+    marginTop: "4px",
   },
 
   primaryBtn: {
     background: "#2563eb",
     color: "white",
     border: "none",
-    padding: "10px 16px",
-    borderRadius: "8px",
+    padding: "10px 18px",
+    borderRadius: "10px",
     cursor: "pointer",
     fontWeight: "600",
+    fontSize: "14px",
+    whiteSpace: "nowrap",
   },
 
   card: {
     background: "#020617",
-    padding: "1.2rem",
-    borderRadius: "10px",
+    padding: "1.25rem",
+    borderRadius: "14px",
     border: "1px solid #334155",
     marginBottom: "1.5rem",
   },
 
   sectionTitle: {
-    marginBottom: "0.8rem",
+    marginBottom: "0.9rem",
+    fontSize: "1.05rem",
   },
 
   statsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: "1rem",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "1.25rem",
     marginBottom: "1.5rem",
   },
 
   statCard: {
     background: "#020617",
     border: "1px solid #334155",
-    borderRadius: "10px",
-    padding: "1.2rem",
+    borderRadius: "14px",
+    padding: "1.4rem",
     textAlign: "center",
   },
 
   statTitle: {
     color: "#94a3b8",
+    fontSize: "14px",
+    marginBottom: "4px",
   },
 
   statValue: {
-    fontSize: "2rem",
-    marginTop: "0.3rem",
+    fontSize: "2.1rem",
+    fontWeight: "700",
   },
 
   cardHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: "10px",
+    flexWrap: "wrap",
   },
 
   linkBtn: {
@@ -205,36 +268,46 @@ const styles = {
     border: "none",
     color: "#60a5fa",
     cursor: "pointer",
-    fontWeight: "600",
+    fontSize: "14px",
+    padding: 0,
   },
 
   projectList: {
     listStyle: "none",
     padding: 0,
     marginTop: "1rem",
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
   },
 
   projectItem: {
     display: "flex",
     justifyContent: "space-between",
-    padding: "10px",
-    borderBottom: "1px solid #334155",
+    alignItems: "center",
+    gap: "12px",
+    padding: "10px 12px",
+    borderRadius: "8px",
+    border: "1px solid #334155",
     cursor: "pointer",
+    flexWrap: "wrap",              
   },
 
   status: {
     fontSize: "12px",
-    padding: "4px 10px",
+    padding: "4px 12px",
     borderRadius: "999px",
     background: "#1e293b",
+    whiteSpace: "nowrap",
   },
 
   infoBox: {
     background: "#020617",
     border: "1px dashed #334155",
     padding: "1rem",
-    borderRadius: "10px",
+    borderRadius: "14px",
     color: "#94a3b8",
     fontSize: "14px",
+    marginTop: "1rem",
   },
 };
