@@ -128,14 +128,21 @@ export const getCurrentUser = async (req, res) => {
   const { userId, tenantId } = req.user;
 
   const result = await pool.query(
-    `
-    SELECT u.id, u.email, u.full_name, u.role, t.name, t.subdomain
-    FROM users u
-    JOIN tenants t ON t.id = u.tenant_id
-    WHERE u.id=$1 AND t.id=$2
-    `,
-    [userId, tenantId]
-  );
+  `
+  SELECT 
+    u.id,
+    u.email,
+    u.full_name,
+    u.role,
+    u.tenant_id,     
+    t.name AS tenant_name,
+    t.subdomain
+  FROM users u
+  JOIN tenants t ON t.id = u.tenant_id
+  WHERE u.id=$1 AND t.id=$2
+  `,
+  [userId, tenantId]
+);
 
   if (!result.rowCount) {
     return res.status(404).json({ success: false, message: "User not found" });
