@@ -8,7 +8,7 @@ Students, developers, and evaluators reviewing multi-tenant backend architecture
 
 ---
 
-## 🚀 Features
+##  Features
 
 - Multi-tenant architecture with strict tenant isolation
 - Role-based access control (super_admin, tenant_admin, user)
@@ -76,7 +76,7 @@ This application follows a **three-tier architecture**:
 
 ---
 
-## ⚙️ Installation & Setup
+##  Installation & Setup
 
 ### Prerequisites
 - Docker
@@ -260,4 +260,3 @@ This project is for educational and evaluation purposes.
 
 ````
 
----
